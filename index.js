@@ -16,7 +16,7 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'https://proticketing.onrender.com',
   credentials: true, 
 }));
 app.use(cookieParser());
