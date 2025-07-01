@@ -2,7 +2,7 @@ import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-const maxAge = 60 * 60 * 1000; // 1 hour in ms
+const maxAge = 60 * 60 * 1000; // 1 hour
 
 // Register new user
 export const registerUser = async (req, res) => {
@@ -37,7 +37,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
-
+// Login user
 export const loginUser = async (req, res) => {
   const { email, password, role } = req.body;
   try {
@@ -60,11 +60,11 @@ export const loginUser = async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Set token in HTTP-only cookie
+    // ✅ Cookie Setup for both dev and production
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       maxAge,
     });
 
@@ -83,7 +83,12 @@ export const loginUser = async (req, res) => {
 
 // Logout user
 export const logoutUser = (req, res) => {
-  res.cookie('token', '', { maxAge: 0 });
+  res.cookie('token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    maxAge: 0,
+  });
   console.log(`User logged out`);
   res.status(200).json({ success: true, message: 'Logged out successfully' });
 };
